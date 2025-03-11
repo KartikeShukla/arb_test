@@ -9,23 +9,32 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, UserPlus, AlertCircle } from "lucide-react";
+import { UserPlus, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { createClient } from "../../../supabase/client";
+
+interface Institution {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  created_at: string;
+  status: string;
+}
 
 interface CreateInstitutionAdminDialogProps {
-  institution: {
-    id: string;
-    name: string;
-  };
+  isOpen: boolean;
+  onClose: () => void;
+  institution: Institution;
   onUserCreated: () => void;
 }
 
-export function CreateInstitutionAdminDialog({
+export default function CreateInstitutionAdminDialog({
+  isOpen,
+  onClose,
   institution,
   onUserCreated,
 }: CreateInstitutionAdminDialogProps) {
@@ -35,7 +44,6 @@ export function CreateInstitutionAdminDialog({
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
 
   const handleCreate = async () => {
     setError(null);
@@ -54,50 +62,32 @@ export function CreateInstitutionAdminDialog({
     setIsCreating(true);
 
     try {
-      const supabase = createClient();
-
-      // 1. Create the user in Auth
-      const { data: authData, error: authError } =
-        await supabase.auth.admin.createUser({
-          email,
-          password,
-          email_confirm: true,
-          user_metadata: {
-            full_name: fullName,
-          },
-        });
-
-      if (authError) {
-        setError(authError.message);
-        setIsCreating(false);
-        return;
-      }
-
-      if (!authData.user) {
-        setError("Failed to create user");
-        setIsCreating(false);
-        return;
-      }
-
-      // 2. Update the user profile with role and institution_id
-      const { error: profileError } = await supabase.from("users").insert({
-        id: authData.user.id,
-        name: fullName,
+      console.log("Creating institution admin with data:", {
         full_name: fullName,
-        email: email,
-        user_id: authData.user.id,
-        token_identifier: authData.user.id,
-        role: "institution", // Set role to institution admin
+        email,
+        role: "institution",
         institution_id: institution.id,
-        created_at: new Date().toISOString(),
       });
 
-      if (profileError) {
-        setError(
-          `User created but profile update failed: ${profileError.message}`,
-        );
-        setIsCreating(false);
-        return;
+      const response = await fetch("/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          full_name: fullName,
+          email,
+          password,
+          role: "institution",
+          institution_id: institution.id,
+        }),
+      });
+
+      const data = await response.json();
+      console.log("Institution admin creation response:", data);
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create institution admin");
       }
 
       // Success
@@ -107,28 +97,22 @@ export function CreateInstitutionAdminDialog({
       setFullName("");
       setEmail("");
       setPassword("");
-      setIsCreating(false);
 
       // Notify parent after a delay to show success message
       setTimeout(() => {
-        setOpen(false);
         onUserCreated();
+        onClose();
       }, 2000);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error creating institution admin:", err);
-      setError("An unexpected error occurred");
+      setError(err.message || "An unexpected error occurred");
+    } finally {
       setIsCreating(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="flex items-center gap-2">
-          <UserPlus className="h-4 w-4" />
-          <span>Create Institution Admin</span>
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Create Admin for {institution.name}</DialogTitle>
@@ -199,11 +183,7 @@ export function CreateInstitutionAdminDialog({
         </div>
 
         <DialogFooter className="sm:justify-end">
-          <Button
-            variant="outline"
-            onClick={() => setOpen(false)}
-            disabled={isCreating}
-          >
+          <Button variant="outline" onClick={onClose} disabled={isCreating}>
             Cancel
           </Button>
           <Button

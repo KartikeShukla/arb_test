@@ -15,13 +15,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Building2, Plus, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { createClient } from "../../../supabase/client";
+import CreateInstitutionAdminDialog from "./create-institution-admin-dialog";
+
+interface Institution {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  created_at: string;
+  status: string;
+}
 
 interface CreateInstitutionDialogProps {
   onInstitutionCreated: () => void;
 }
 
-export function CreateInstitutionDialog({
+export default function CreateInstitutionDialog({
   onInstitutionCreated,
 }: CreateInstitutionDialogProps) {
   const [name, setName] = useState("");
@@ -32,10 +42,8 @@ export function CreateInstitutionDialog({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
-  const [createdInstitution, setCreatedInstitution] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
+  const [createdInstitution, setCreatedInstitution] =
+    useState<Institution | null>(null);
   const [showAdminDialog, setShowAdminDialog] = useState(false);
 
   const handleCreate = async () => {
@@ -50,54 +58,36 @@ export function CreateInstitutionDialog({
     setIsCreating(true);
 
     try {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      console.log("Creating institution with data:", {
+        name,
+        email,
+        phone,
+        address,
+      });
 
-      if (!user) {
-        setError("You must be logged in to create an institution");
-        setIsCreating(false);
-        return;
-      }
-
-      // Check if the current user is an admin
-      const { data: userData, error: userError } = await supabase
-        .from("users")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-
-      if (userError || userData?.role !== "admin") {
-        setError("Only administrators can create institutions");
-        setIsCreating(false);
-        return;
-      }
-
-      const { data, error: createError } = await supabase
-        .from("institutions")
-        .insert({
+      const response = await fetch("/api/institutions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           name,
           email,
           phone,
           address,
-          created_by: user.id,
           status: "active",
-        })
-        .select()
-        .single();
+        }),
+      });
 
-      if (createError) {
-        setError(createError.message);
-        setIsCreating(false);
-        return;
+      const data = await response.json();
+      console.log("Institution creation response:", data);
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create institution");
       }
 
       // Store the created institution for admin creation
-      setCreatedInstitution({
-        id: data.id,
-        name: data.name,
-      });
+      setCreatedInstitution(data.institution);
 
       // Show success message
       setSuccess(
@@ -109,15 +99,15 @@ export function CreateInstitutionDialog({
       setEmail("");
       setPhone("");
       setAddress("");
-      setIsCreating(false);
 
       // Show admin creation dialog after a short delay
       setTimeout(() => {
         setShowAdminDialog(true);
       }, 1000);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error creating institution:", err);
-      setError("An unexpected error occurred");
+      setError(err.message || "An unexpected error occurred");
+    } finally {
       setIsCreating(false);
     }
   };
@@ -244,8 +234,10 @@ export function CreateInstitutionDialog({
       </Dialog>
 
       {/* Dialog for creating institution admin */}
-      {createdInstitution && (
+      {createdInstitution && showAdminDialog && (
         <CreateInstitutionAdminDialog
+          isOpen={showAdminDialog}
+          onClose={() => setShowAdminDialog(false)}
           institution={createdInstitution}
           onUserCreated={handleAdminCreated}
         />

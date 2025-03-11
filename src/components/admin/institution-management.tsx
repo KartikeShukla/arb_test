@@ -18,12 +18,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Building2, Eye, Filter, Plus, Search, UserPlus } from "lucide-react";
+import { Building2, Eye, Filter, Search, UserPlus } from "lucide-react";
 import { LoadingSpinner } from "../ui/loading-spinner";
-import { createClient } from "../../../supabase/client";
-import { CreateInstitutionDialog } from "./create-institution-dialog";
-import { CreateUserDialog } from "./create-user-dialog";
-import { CreateInstitutionAdminDialog } from "./create-institution-admin-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import CreateInstitutionDialog from "./create-institution-dialog";
+import { useRouter } from "next/navigation";
 
 interface Institution {
   id: string;
@@ -33,15 +32,16 @@ interface Institution {
   address: string;
   created_at: string;
   status: string;
+  arbitrator_count?: number;
+  client_count?: number;
 }
 
 export default function InstitutionManagement() {
+  const router = useRouter();
   const [institutions, setInstitutions] = useState<Institution[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedInstitution, setSelectedInstitution] =
-    useState<Institution | null>(null);
-  const [isCreateUserDialogOpen, setIsCreateUserDialogOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadInstitutions();
@@ -49,40 +49,71 @@ export default function InstitutionManagement() {
 
   const loadInstitutions = async () => {
     setIsLoading(true);
+    setError(null);
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from("institutions")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const response = await fetch("/api/institutions");
+      const data = await response.json();
 
-      if (error) {
-        console.error("Error loading institutions:", error);
-      } else {
-        setInstitutions(data || []);
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to load institutions");
       }
-    } catch (err) {
-      console.error("Unexpected error loading institutions:", err);
+
+      // Get institutions with user counts
+      const institutionsWithCounts = await Promise.all(
+        (data.institutions || []).map(async (institution: Institution) => {
+          try {
+            // Get arbitrator count
+            const arbitratorResponse = await fetch(
+              `/api/institutions/${institution.id}/arbitrators`,
+            );
+            const arbitratorData = await arbitratorResponse.json();
+
+            // Get client count
+            const clientResponse = await fetch(
+              `/api/institutions/${institution.id}/clients`,
+            );
+            const clientData = await clientResponse.json();
+
+            return {
+              ...institution,
+              arbitrator_count: arbitratorData.arbitrators?.length || 0,
+              client_count: clientData.clients?.length || 0,
+            };
+          } catch (error) {
+            console.error(
+              `Error fetching counts for ${institution.id}:`,
+              error,
+            );
+            return {
+              ...institution,
+              arbitrator_count: 0,
+              client_count: 0,
+            };
+          }
+        }),
+      );
+
+      setInstitutions(institutionsWithCounts);
+    } catch (err: any) {
+      console.error("Error loading institutions:", err);
+      setError(err.message || "An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCreateInstitution = () => {
-    // This will be handled by the CreateInstitutionDialog component
-    // After successful creation, we'll reload the institutions
-    loadInstitutions();
-  };
-
-  const handleCreateUser = (institution: Institution) => {
-    setSelectedInstitution(institution);
-    setIsCreateUserDialogOpen(true);
+  const handleViewInstitution = (id: string) => {
+    console.log(
+      `Navigating to institution detail page: /dashboard/admin/institutions/${id}`,
+    );
+    router.push(`/dashboard/admin/institutions/${id}`);
   };
 
   const filteredInstitutions = institutions.filter(
     (inst) =>
       inst.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      inst.email?.toLowerCase().includes(searchTerm.toLowerCase()),
+      (inst.email &&
+        inst.email.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
   return (
@@ -123,6 +154,12 @@ export default function InstitutionManagement() {
             </Button>
           </div>
 
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <LoadingSpinner size={40} />
@@ -139,6 +176,8 @@ export default function InstitutionManagement() {
                     <TableHead>Email</TableHead>
                     <TableHead>Phone</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Arbitrators</TableHead>
+                    <TableHead>Clients</TableHead>
                     <TableHead>Created At</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -165,6 +204,20 @@ export default function InstitutionManagement() {
                           </span>
                         </TableCell>
                         <TableCell>
+                          <div className="flex items-center gap-1">
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                              {institution.arbitrator_count || 0}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              {institution.client_count || 0}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
                           {new Date(
                             institution.created_at,
                           ).toLocaleDateString()}
@@ -174,14 +227,9 @@ export default function InstitutionManagement() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleCreateUser(institution)}
-                              title="Create Institution User"
-                            >
-                              <UserPlus className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
+                              onClick={() =>
+                                handleViewInstitution(institution.id)
+                              }
                               title="View Details"
                             >
                               <Eye className="h-4 w-4" />
@@ -193,7 +241,7 @@ export default function InstitutionManagement() {
                   ) : (
                     <TableRow>
                       <TableCell
-                        colSpan={6}
+                        colSpan={8}
                         className="text-center py-4 text-muted-foreground"
                       >
                         No institutions found matching your search criteria.
@@ -206,18 +254,6 @@ export default function InstitutionManagement() {
           )}
         </CardContent>
       </Card>
-
-      {selectedInstitution && (
-        <CreateUserDialog
-          isOpen={isCreateUserDialogOpen}
-          onClose={() => setIsCreateUserDialogOpen(false)}
-          institution={selectedInstitution}
-          onUserCreated={() => {
-            setIsCreateUserDialogOpen(false);
-            setSelectedInstitution(null);
-          }}
-        />
-      )}
     </div>
   );
 }

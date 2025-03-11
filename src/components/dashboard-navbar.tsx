@@ -23,6 +23,7 @@ import {
   Building2,
   UserPlus,
   Link2,
+  CheckCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -107,7 +108,9 @@ export default function DashboardNavbar() {
               <>
                 <Link
                   href="/dashboard/admin/institutions"
+                  prefetch={false}
                   className="flex items-center gap-1 text-gray-600 hover:text-blue-600 font-medium"
+                  replace={true}
                 >
                   <Building2 className="h-4 w-4" />
                   <span>Institutions</span>
@@ -118,6 +121,27 @@ export default function DashboardNavbar() {
                 >
                   <BarChart className="h-4 w-4" />
                   <span>Reports</span>
+                </Link>
+                <Link
+                  href="/dashboard/storage"
+                  className="flex items-center gap-1 text-gray-600 hover:text-blue-600 font-medium"
+                >
+                  <Database className="h-4 w-4" />
+                  <span>Storage</span>
+                </Link>
+                <Link
+                  href="/dashboard/admin/verify"
+                  className="flex items-center gap-1 text-gray-600 hover:text-blue-600 font-medium"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  <span>Verify Admin</span>
+                </Link>
+                <Link
+                  href="/dashboard/clients"
+                  className="flex items-center gap-1 text-gray-600 hover:text-blue-600 font-medium"
+                >
+                  <UserCircle className="h-4 w-4" />
+                  <span>Clients</span>
                 </Link>
               </>
             )}
@@ -156,14 +180,16 @@ export default function DashboardNavbar() {
               </>
             )}
 
-            {/* For testing - will be removed in production */}
-            <Link
-              href="/dashboard/role-switcher"
-              className="flex items-center gap-1 text-gray-600 hover:text-blue-600 font-medium"
-            >
-              <Users className="h-4 w-4" />
-              <span>Switch Role</span>
-            </Link>
+            {/* Role switcher only visible to admins */}
+            {userRole === "admin" && (
+              <Link
+                href="/dashboard/role-switcher"
+                className="flex items-center gap-1 text-gray-600 hover:text-blue-600 font-medium"
+              >
+                <Users className="h-4 w-4" />
+                <span>Switch Role</span>
+              </Link>
+            )}
           </div>
         </div>
         <div className="flex gap-4 items-center">
@@ -196,7 +222,7 @@ export default function DashboardNavbar() {
               <DropdownMenuItem
                 onClick={async () => {
                   await supabase.auth.signOut();
-                  router.refresh();
+                  router.push("/sign-in");
                 }}
               >
                 Sign out

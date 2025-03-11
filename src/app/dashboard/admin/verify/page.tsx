@@ -1,11 +1,11 @@
 import { createClient } from "../../../../../supabase/server";
 import { redirect } from "next/navigation";
 import DashboardNavbar from "@/components/dashboard-navbar";
-import InstitutionManagement from "@/components/admin/institution-management";
+import AdminVerification from "@/components/admin/admin-verification";
 
 export const dynamic = "force-dynamic";
 
-export default async function InstitutionsPage() {
+export default async function AdminVerifyPage() {
   const supabase = await createClient();
 
   const {
@@ -32,7 +32,12 @@ export default async function InstitutionsPage() {
     <>
       <DashboardNavbar />
       <main className="container mx-auto px-4 py-8">
-        <InstitutionManagement />
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold tracking-tight">
+            Admin Verification
+          </h1>
+        </div>
+        <AdminVerification />
       </main>
     </>
   );

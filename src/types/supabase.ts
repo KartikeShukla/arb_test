@@ -188,6 +188,7 @@ export type Database = {
           image: string | null
           institution_id: string | null
           name: string | null
+          role: string | null
           subscription: string | null
           token_identifier: string
           updated_at: string | null
@@ -203,6 +204,7 @@ export type Database = {
           image?: string | null
           institution_id?: string | null
           name?: string | null
+          role?: string | null
           subscription?: string | null
           token_identifier: string
           updated_at?: string | null
@@ -218,6 +220,7 @@ export type Database = {
           image?: string | null
           institution_id?: string | null
           name?: string | null
+          role?: string | null
           subscription?: string | null
           token_identifier?: string
           updated_at?: string | null

@@ -20,23 +20,8 @@ export const signUpAction = async (formData: FormData) => {
     );
   }
 
-  // Check if there are any existing users
-  const { data: existingUsers, error: countError } = await supabase
-    .from("users")
-    .select("id", { count: "exact" });
-
-  // Only the first user can be an admin
-  const isFirstUser =
-    !countError && (!existingUsers || existingUsers.length === 0);
-  const role = isFirstUser ? "admin" : "client"; // Only first user is admin, others need to be created by admin/institution
-
-  if (!isFirstUser) {
-    return encodedRedirect(
-      "error",
-      "/sign-up",
-      "Direct sign-up is only available for the first admin user. Please contact your administrator or institution for an account.",
-    );
-  }
+  // Allow multiple admin accounts
+  // No need to check for existing admins
 
   const {
     data: { user },
@@ -49,8 +34,9 @@ export const signUpAction = async (formData: FormData) => {
       data: {
         full_name: fullName,
         email: email,
-        role: role,
+        role: "admin", // First user is always admin
       },
+      emailConfirm: true, // Auto-confirm email for direct signup
     },
   });
 
@@ -59,31 +45,13 @@ export const signUpAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-up", error.message);
   }
 
-  if (user) {
-    try {
-      const { error: updateError } = await supabase.from("users").insert({
-        id: user.id,
-        name: fullName,
-        full_name: fullName,
-        email: email,
-        user_id: user.id,
-        token_identifier: user.id,
-        role: role, // Set the user role to admin for first user
-        created_at: new Date().toISOString(),
-      });
-
-      if (updateError) {
-        console.error("Error updating user profile:", updateError);
-      }
-    } catch (err) {
-      console.error("Error in user profile creation:", err);
-    }
-  }
+  // The trigger will handle creating the user profile in the public.users table
+  // No need to manually insert here, which was causing the infinite recursion
 
   return encodedRedirect(
     "success",
-    "/sign-up",
-    "Thanks for signing up as an admin! Please check your email for a verification link.",
+    "/sign-in",
+    "Thanks for signing up as an admin! You can now sign in with your credentials.",
   );
 };
 

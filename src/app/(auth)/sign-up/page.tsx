@@ -6,6 +6,8 @@ import Link from "next/link";
 import { SmtpMessage } from "../smtp-message";
 import { signUpAction } from "@/app/actions";
 import Navbar from "@/components/navbar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { InfoIcon } from "lucide-react";
 
 export default async function Signup(props: {
   searchParams: Promise<Message>;
@@ -37,6 +39,16 @@ export default async function Signup(props: {
                 </Link>
               </p>
             </div>
+
+            <Alert className="bg-blue-50 border-blue-200">
+              <InfoIcon className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-800">
+                This sign-up will create an administrator account with full
+                access to the platform. After signing up, you'll be able to
+                immediately log in and create arbitration institutions and
+                users.
+              </AlertDescription>
+            </Alert>
 
             <div className="space-y-4">
               <div className="space-y-2">
@@ -88,7 +100,7 @@ export default async function Signup(props: {
               pendingText="Signing up..."
               className="w-full"
             >
-              Sign up
+              Sign up as Administrator
             </SubmitButton>
 
             <FormMessage message={searchParams} />

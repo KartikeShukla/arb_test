@@ -1,11 +1,13 @@
-import { createClient } from "../../../../../supabase/server";
+import { createClient } from "../../../../../../supabase/server";
 import { redirect } from "next/navigation";
 import DashboardNavbar from "@/components/dashboard-navbar";
-import InstitutionManagement from "@/components/admin/institution-management";
+import InstitutionDetail from "@/components/admin/institution-detail";
 
-export const dynamic = "force-dynamic";
-
-export default async function InstitutionsPage() {
+export default async function InstitutionDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const supabase = await createClient();
 
   const {
@@ -28,11 +30,22 @@ export default async function InstitutionsPage() {
     return redirect("/dashboard");
   }
 
+  // Get institution details
+  const { data: institution, error: institutionError } = await supabase
+    .from("institutions")
+    .select("*")
+    .eq("id", params.id)
+    .single();
+
+  if (institutionError || !institution) {
+    return redirect("/dashboard/admin/institutions");
+  }
+
   return (
     <>
       <DashboardNavbar />
       <main className="container mx-auto px-4 py-8">
-        <InstitutionManagement />
+        <InstitutionDetail institution={institution} />
       </main>
     </>
   );

@@ -38,18 +38,14 @@ interface CreateUserDialogProps {
   onClose: () => void;
   institution: Institution;
   onUserCreated: () => void;
+  initialRole?: "arbitrator" | "client" | "institution";
 }
 
-export function CreateUserDialog({
-  isOpen,
-  onClose,
-  institution,
-  onUserCreated,
-}: CreateUserDialogProps) {
+export function CreateUserDialog(props: CreateUserDialogProps) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("arbitrator");
+  const [role, setRole] = useState(props.initialRole || "arbitrator");
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -101,7 +97,7 @@ export function CreateUserDialog({
       if (
         userData.role !== "admin" &&
         (userData.role !== "institution" ||
-          userData.institution_id !== institution.id)
+          userData.institution_id !== props.institution.id)
       ) {
         setError(
           "You don't have permission to create users for this institution",
@@ -142,7 +138,7 @@ export function CreateUserDialog({
         user_id: authData.user.id,
         token_identifier: authData.user.id,
         role: role,
-        institution_id: institution.id,
+        institution_id: props.institution.id,
         created_at: new Date().toISOString(),
       });
 
@@ -164,7 +160,7 @@ export function CreateUserDialog({
 
       // Notify parent after a delay to show success message
       setTimeout(() => {
-        onUserCreated();
+        props.onUserCreated();
       }, 2000);
     } catch (err) {
       console.error("Error creating user:", err);
@@ -174,10 +170,10 @@ export function CreateUserDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={props.isOpen} onOpenChange={props.onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Create User for {institution.name}</DialogTitle>
+          <DialogTitle>Create User for {props.institution.name}</DialogTitle>
           <DialogDescription>
             Add a new user associated with this institution
           </DialogDescription>
@@ -254,13 +250,18 @@ export function CreateUserDialog({
               <SelectContent>
                 <SelectItem value="arbitrator">Arbitrator</SelectItem>
                 <SelectItem value="client">Client</SelectItem>
+                <SelectItem value="institution">Institution Admin</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
 
         <DialogFooter className="sm:justify-end">
-          <Button variant="outline" onClick={onClose} disabled={isCreating}>
+          <Button
+            variant="outline"
+            onClick={props.onClose}
+            disabled={isCreating}
+          >
             Cancel
           </Button>
           <Button

@@ -15,8 +15,9 @@ import {
   FileText,
   Scale,
   Users,
+  Building2,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import {
   SkeletonCard,
@@ -25,6 +26,8 @@ import {
 } from "../ui/skeleton-card";
 import { LoadingSpinner } from "../ui/loading-spinner";
 import dynamic from "next/dynamic";
+import Link from "next/link";
+import InstitutionSummaryWidget from "../admin/institution-summary-widget";
 
 interface CaseStats {
   total: number;
@@ -114,7 +117,7 @@ export default function DashboardOverview({
             </TabsList>
 
             <TabsContent value="overview" className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
@@ -178,9 +181,45 @@ export default function DashboardOverview({
                     </p>
                   </CardContent>
                 </Card>
+
+                {userRole === "admin" && (
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        Institutions
+                      </CardTitle>
+                      <Building2 className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">3</div>
+                      <p className="text-xs text-muted-foreground">
+                        <Link
+                          href="/dashboard/admin/institutions"
+                          prefetch={false}
+                          className="text-blue-600 hover:underline"
+                        >
+                          View all institutions
+                        </Link>
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                {userRole === "admin" && (
+                  <Card className="col-span-3">
+                    <CardHeader>
+                      <CardTitle>Institution Management</CardTitle>
+                      <CardDescription>
+                        Overview of arbitration institutions
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <InstitutionSummaryWidget />
+                    </CardContent>
+                  </Card>
+                )}
                 <Card className="col-span-4">
                   <CardHeader>
                     <CardTitle>Recent Activity</CardTitle>
