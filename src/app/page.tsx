@@ -1,7 +1,11 @@
-import { Award, Scale, BookOpen, CheckCircle, Gavel, Globe, MessageSquare, Shield, Users, ArrowRight, ExternalLink } from "lucide-react"
+"use client"
+
+import { Award, Scale, BookOpen, CheckCircle, Gavel, Globe, MessageSquare, Shield, Users, ArrowRight, ExternalLink, Mail } from "lucide-react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { useState } from "react"
+import { CaseFormModal } from "@/components/case-form/case-form-modal"
 
 // Data constants
 const FEATURES = [
@@ -103,6 +107,11 @@ const SectionHeader = ({ title, description }: { title: string; description: str
 );
 
 export default function Home() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const openModal = () => setIsModalOpen(true)
+  const closeModal = () => setIsModalOpen(false)
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -128,12 +137,13 @@ export default function Home() {
               <p className="mx-auto max-w-[800px] text-white/90 text-xl md:text-2xl leading-relaxed">
                 Resolving complex disputes with impartiality, expertise, and efficiency for businesses across India and beyond.
               </p>
-              <div className="flex flex-col sm:flex-row gap-5 justify-center pt-6">
-                <Button size="lg" className="text-base font-medium px-8 py-6 rounded-md hover:translate-y-[-2px] transition-all">
-                  Start Arbitration
-                </Button>
-                <Button size="lg" variant="outline" className="text-base font-medium px-8 py-6 rounded-md bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 hover:translate-y-[-2px] transition-all">
-                  Learn More
+              <div className="mt-12 flex flex-col sm:flex-row gap-5 justify-center">
+                <Button 
+                  size="lg" 
+                  className="text-base font-medium px-8 py-6 rounded-md bg-blue-600 text-white hover:bg-blue-700 hover:translate-y-[-2px] transition-all"
+                  onClick={openModal}
+                >
+                  Get Started with Your Case <Mail className="ml-2 h-5 w-5" />
                 </Button>
               </div>
             </div>
@@ -285,12 +295,13 @@ export default function Home() {
                 Our team of expert arbitrators is ready to help you reach a fair and efficient resolution.
               </p>
             </div>
-            <div className="mt-12 flex flex-col sm:flex-row gap-5">
-              <Button size="lg" className="text-base font-medium px-8 py-6 rounded-md bg-white text-primary hover:bg-white/90 hover:translate-y-[-2px] transition-all">
-                Start Arbitration
-              </Button>
-              <Button size="lg" variant="outline" className="text-base font-medium px-8 py-6 rounded-md border-white text-white hover:bg-white/10 hover:translate-y-[-2px] transition-all">
-                Contact Us
+            <div className="mt-12 flex flex-col sm:flex-row gap-5 justify-center">
+              <Button 
+                size="lg" 
+                className="text-base font-medium px-8 py-6 rounded-md bg-blue-600 text-white hover:bg-blue-700 hover:translate-y-[-2px] transition-all"
+                onClick={openModal}
+              >
+                Get Started with Your Case <Mail className="ml-2 h-5 w-5" />
               </Button>
             </div>
           </div>
@@ -350,6 +361,9 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Case Form Modal */}
+      <CaseFormModal isOpen={isModalOpen} onClose={closeModal} />
     </div>
   )
 } 
