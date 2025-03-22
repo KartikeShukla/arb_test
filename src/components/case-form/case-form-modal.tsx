@@ -1,17 +1,12 @@
 import { useState, useEffect, useRef } from "react"
 import { X, Upload, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { createClient } from "@supabase/supabase-js"
+import { supabase, mockSupabaseOps, isDevelopment } from "@/config/supabase"
 
 interface CaseFormModalProps {
   isOpen: boolean
   onClose: () => void
 }
-
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 export function CaseFormModal({ isOpen, onClose }: CaseFormModalProps) {
   const [formData, setFormData] = useState({
@@ -70,33 +65,52 @@ export function CaseFormModal({ isOpen, onClose }: CaseFormModalProps) {
     setSubmitError("")
 
     try {
-      // 1. Submit the form data
-      const { data: formResponseData, error: formError } = await supabase
-        .from('cases')
-        .insert([
-          {
-            name: formData.name,
-            email: formData.email,
-            description: formData.description
-          }
-        ])
-        .select()
+      // Check if in development mode with mock
+      const useMockData = isDevelopment && !supabase;
+      
+      // Prepare data to submit
+      const caseData = {
+        name: formData.name,
+        email: formData.email,
+        description: formData.description
+      };
 
-      if (formError) {
-        throw new Error(formError.message)
+      let formResponseData;
+
+      // Handle form submission (real or mock)
+      if (useMockData) {
+        // Use mock implementation
+        console.log("Using mock Supabase implementation");
+        const response = await mockSupabaseOps.insert([caseData]);
+        formResponseData = response.data;
+      } else if (supabase) {
+        // Use real Supabase client
+        const { data, error } = await supabase
+          .from('cases')
+          .insert([caseData])
+          .select();
+          
+        if (error) throw new Error(error.message);
+        formResponseData = data;
+      } else {
+        throw new Error("Database connection not available. Please check your environment configuration.");
       }
 
-      // 2. If there are files, upload them with reference to the case entry
+      // Handle file uploads (real or mock)
       if (files.length > 0 && formResponseData) {
-        const caseId = formResponseData[0].id
+        const caseId = formResponseData[0].id;
 
         for (const file of files) {
-          const { error: uploadError } = await supabase.storage
-            .from('case_documents')
-            .upload(`${caseId}/${file.name}`, file)
+          if (useMockData) {
+            await mockSupabaseOps.upload(`${caseId}/${file.name}`, file);
+          } else if (supabase) {
+            const { error: uploadError } = await supabase.storage
+              .from('case_documents')
+              .upload(`${caseId}/${file.name}`, file);
 
-          if (uploadError) {
-            throw new Error(`File upload error: ${uploadError.message}`)
+            if (uploadError) {
+              throw new Error(`File upload error: ${uploadError.message}`);
+            }
           }
         }
       }
@@ -254,6 +268,25 @@ export function CaseFormModal({ isOpen, onClose }: CaseFormModalProps) {
               )}
             </div>
 
+            {!supabase && !isDevelopment && (
+              <div 
+                className="p-3 bg-yellow-50 text-yellow-700 rounded-md text-sm"
+                role="alert"
+                aria-live="assertive"
+              >
+                Database connection not configured. Please check your environment settings.
+              </div>
+            )}
+
+            {!supabase && isDevelopment && (
+              <div 
+                className="p-3 bg-blue-50 text-blue-700 rounded-md text-sm"
+                role="alert"
+              >
+                Running in development mode with mock database operations.
+              </div>
+            )}
+
             {submitError && (
               <div 
                 className="p-3 bg-red-50 text-red-700 rounded-md text-sm"
@@ -276,7 +309,7 @@ export function CaseFormModal({ isOpen, onClose }: CaseFormModalProps) {
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || (!supabase && !isDevelopment)}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
                 aria-busy={isSubmitting}
               >
