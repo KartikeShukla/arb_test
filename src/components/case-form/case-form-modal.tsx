@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { X, Upload, Loader2 } from "lucide-react"
+import { X, Upload, Loader2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { supabase, mockSupabaseOps, isDevelopment } from "@/config/supabase"
 
@@ -7,6 +7,18 @@ interface CaseFormModalProps {
   isOpen: boolean
   onClose: () => void
 }
+
+// Maximum file size (5MB)
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+// Allowed file types
+const ALLOWED_FILE_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'image/jpeg',
+  'image/png',
+  'text/plain'
+];
 
 export function CaseFormModal({ isOpen, onClose }: CaseFormModalProps) {
   const [formData, setFormData] = useState({
@@ -18,6 +30,7 @@ export function CaseFormModal({ isOpen, onClose }: CaseFormModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState("")
   const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [fileError, setFileError] = useState("")
   
   const modalRef = useRef<HTMLDivElement>(null)
   const initialFocusRef = useRef<HTMLInputElement>(null)
@@ -54,25 +67,51 @@ export function CaseFormModal({ isOpen, onClose }: CaseFormModalProps) {
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFiles(Array.from(e.target.files))
+    if (!e.target.files || e.target.files.length === 0) {
+      return;
     }
+    
+    const selectedFiles = Array.from(e.target.files);
+    setFileError("");
+    
+    // Validate file size and type
+    const invalidFiles = selectedFiles.filter(
+      file => file.size > MAX_FILE_SIZE || !ALLOWED_FILE_TYPES.includes(file.type)
+    );
+    
+    if (invalidFiles.length > 0) {
+      setFileError(
+        "Some files are too large or have an invalid format. Please upload PDF, DOC, DOCX, JPEG, PNG, or TXT files under 5MB."
+      );
+      return;
+    }
+    
+    setFiles(selectedFiles);
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     setSubmitError("")
+    
+    if (fileError) {
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       // Check if in development mode with mock
       const useMockData = isDevelopment && !supabase;
       
-      // Prepare data to submit
+      // Prepare data to submit to match case_submissions table schema
       const caseData = {
-        name: formData.name,
-        email: formData.email,
-        description: formData.description
+        title: formData.name, // map name to title
+        description: formData.description,
+        claimant_name: formData.name,
+        claimant_email: formData.email,
+        respondent_name: "TBD", // Required field in the schema
+        dispute_type: "General", // Required field in the schema
+        status: 'pending'
       };
 
       let formResponseData;
@@ -84,9 +123,9 @@ export function CaseFormModal({ isOpen, onClose }: CaseFormModalProps) {
         const response = await mockSupabaseOps.insert([caseData]);
         formResponseData = response.data;
       } else if (supabase) {
-        // Use real Supabase client
+        // Use real Supabase client with the case_submissions table
         const { data, error } = await supabase
-          .from('cases')
+          .from('case_submissions')
           .insert([caseData])
           .select();
           
@@ -95,21 +134,47 @@ export function CaseFormModal({ isOpen, onClose }: CaseFormModalProps) {
       } else {
         throw new Error("Database connection not available. Please check your environment configuration.");
       }
+      
+      if (!formResponseData || formResponseData.length === 0) {
+        throw new Error("Failed to create case. Please try again.");
+      }
 
       // Handle file uploads (real or mock)
       if (files.length > 0 && formResponseData) {
         const caseId = formResponseData[0].id;
-
+        
         for (const file of files) {
           if (useMockData) {
             await mockSupabaseOps.upload(`${caseId}/${file.name}`, file);
           } else if (supabase) {
+            // Upload file to storage
+            const filePath = `${caseId}/${Date.now()}-${file.name}`;
             const { error: uploadError } = await supabase.storage
-              .from('case_documents')
-              .upload(`${caseId}/${file.name}`, file);
+              .from('case-documents')
+              .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: false
+              });
 
             if (uploadError) {
+              console.error("File upload error:", uploadError);
               throw new Error(`File upload error: ${uploadError.message}`);
+            }
+            
+            // Store file reference in database with the correct case_id relation
+            const { error: docError } = await supabase
+              .from('case_documents')
+              .insert({
+                case_id: caseId,
+                file_name: file.name,
+                file_path: filePath,
+                file_type: file.type,
+                file_size: file.size
+              });
+              
+            if (docError) {
+              console.error("Document reference error:", docError);
+              throw new Error(`Failed to store document reference: ${docError.message}`);
             }
           }
         }
@@ -126,6 +191,7 @@ export function CaseFormModal({ isOpen, onClose }: CaseFormModalProps) {
         onClose()
       }, 2000)
     } catch (error) {
+      console.error("Submission error:", error);
       setSubmitError(error instanceof Error ? error.message : "An unknown error occurred")
     } finally {
       setIsSubmitting(false)
@@ -171,6 +237,13 @@ export function CaseFormModal({ isOpen, onClose }: CaseFormModalProps) {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {submitError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md flex items-start">
+                <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+                <span>{submitError}</span>
+              </div>
+            )}
+            
             <div className="space-y-1">
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                 Full Name <span className="text-red-500">*</span>
@@ -243,24 +316,30 @@ export function CaseFormModal({ isOpen, onClose }: CaseFormModalProps) {
                         multiple
                         onChange={handleFileChange}
                         className="sr-only"
-                        accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                        accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.txt"
                         aria-label="Upload supporting documents"
                       />
                     </label>
                     <p className="pl-1">or drag and drop</p>
                   </div>
-                  <p className="text-xs text-gray-500">PDF, DOC, DOCX, PNG, JPG up to 10MB each</p>
+                  <p className="text-xs text-gray-500">PDF, DOC, DOCX, JPG, PNG, TXT up to 5MB</p>
                 </div>
               </div>
+              
+              {fileError && (
+                <p className="mt-2 text-sm text-red-600">{fileError}</p>
+              )}
+              
               {files.length > 0 && (
-                <div className="mt-2">
-                  <p className="text-sm text-gray-500" aria-live="polite">
-                    {files.length} file(s) selected
-                  </p>
-                  <ul className="mt-1 space-y-1">
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Selected Files:</h4>
+                  <ul className="space-y-2">
                     {files.map((file, index) => (
-                      <li key={index} className="text-xs text-gray-500 truncate">
-                        {file.name}
+                      <li key={index} className="text-sm text-gray-600 flex items-center">
+                        <svg className="h-4 w-4 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        {file.name} ({(file.size / 1024).toFixed(1)} KB)
                       </li>
                     ))}
                   </ul>
@@ -268,58 +347,19 @@ export function CaseFormModal({ isOpen, onClose }: CaseFormModalProps) {
               )}
             </div>
 
-            {!supabase && !isDevelopment && (
-              <div 
-                className="p-3 bg-yellow-50 text-yellow-700 rounded-md text-sm"
-                role="alert"
-                aria-live="assertive"
-              >
-                Database connection not configured. Please check your environment settings.
-              </div>
-            )}
-
-            {!supabase && isDevelopment && (
-              <div 
-                className="p-3 bg-blue-50 text-blue-700 rounded-md text-sm"
-                role="alert"
-              >
-                Running in development mode with mock database operations.
-              </div>
-            )}
-
-            {submitError && (
-              <div 
-                className="p-3 bg-red-50 text-red-700 rounded-md text-sm"
-                role="alert"
-                aria-live="assertive"
-              >
-                {submitError}
-              </div>
-            )}
-
-            <div className="flex justify-end pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                className="mr-3"
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
+            <div className="pt-2">
               <Button
                 type="submit"
-                disabled={isSubmitting || (!supabase && !isDevelopment)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-                aria-busy={isSubmitting}
+                className="w-full py-2.5"
+                disabled={isSubmitting || fileError !== ""}
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Submitting...
                   </>
                 ) : (
-                  'Submit Case'
+                  "Submit Case"
                 )}
               </Button>
             </div>

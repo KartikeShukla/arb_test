@@ -136,6 +136,95 @@ export interface Database {
             referencedColumns: ["id"]
           }
         ]
+      },
+      case_submissions: {
+        Row: {
+          id: string;
+          title: string;
+          description: string;
+          claimant_name: string;
+          claimant_email: string;
+          claimant_phone?: string;
+          respondent_name: string;
+          respondent_email?: string;
+          respondent_phone?: string;
+          dispute_type: string;
+          dispute_amount?: number;
+          status: CaseStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          description: string;
+          claimant_name: string;
+          claimant_email: string;
+          claimant_phone?: string;
+          respondent_name: string;
+          respondent_email?: string;
+          respondent_phone?: string;
+          dispute_type: string;
+          dispute_amount?: number;
+          status?: CaseStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          description?: string;
+          claimant_name?: string;
+          claimant_email?: string;
+          claimant_phone?: string;
+          respondent_name?: string;
+          respondent_email?: string;
+          respondent_phone?: string;
+          dispute_type?: string;
+          dispute_amount?: number;
+          status?: CaseStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      },
+      case_documents: {
+        Row: {
+          id: string;
+          case_id: string;
+          file_name: string;
+          file_path: string;
+          file_type: string;
+          file_size: number;
+          uploaded_at?: string;
+        };
+        Insert: {
+          id?: string;
+          case_id: string;
+          file_name: string;
+          file_path: string;
+          file_type: string;
+          file_size: number;
+          uploaded_at?: string;
+        };
+        Update: {
+          id?: string;
+          case_id?: string;
+          file_name?: string;
+          file_path?: string;
+          file_type?: string;
+          file_size?: number;
+          uploaded_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "case_documents_case_id_fkey";
+            columns: ["case_id"];
+            isOneToOne: false;
+            referencedRelation: "case_submissions";
+            referencedColumns: ["id"];
+          }
+        ];
       }
     }
     Views: {
@@ -169,4 +258,18 @@ export interface Database {
       [_ in never]: never
     }
   }
+}
+
+// Define the case status type
+export type CaseStatus = 'pending' | 'in_review' | 'accepted' | 'rejected' | 'completed';
+
+// Interface for case submission form data
+export interface CaseSubmissionFormData {
+  title: string;
+  description: string;
+  claimant_name: string;
+  claimant_email: string;
+  respondent_name: string;
+  dispute_type: string;
+  status?: CaseStatus;
 } 
