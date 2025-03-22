@@ -3,97 +3,106 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 
+// Data constants
+const FEATURES = [
+  {
+    title: "Fair & Impartial",
+    description: "Our arbitrators deliver unbiased resolutions with strict adherence to principles of natural justice and equity.",
+    icon: <Scale className="h-8 w-8 text-primary" />,
+  },
+  {
+    title: "Industry Expertise",
+    description: "Access to arbitrators with deep knowledge in specialized sectors, from technology to infrastructure.",
+    icon: <BookOpen className="h-8 w-8 text-primary" />,
+  },
+  {
+    title: "Confidential Process",
+    description: "Complete privacy for all proceedings, safeguarding your sensitive business information and reputation.",
+    icon: <Shield className="h-8 w-8 text-primary" />,
+  },
+  {
+    title: "Time-Efficient",
+    description: "Structured processes that deliver resolutions in a fraction of the time compared to traditional litigation.",
+    icon: <CheckCircle className="h-8 w-8 text-primary" />,
+  },
+];
+
+const SERVICES = [
+  {
+    title: "Commercial Arbitration",
+    description: "Expert resolution of disputes arising from contracts, partnerships, and business relationships.",
+    icon: <Gavel className="h-8 w-8 text-primary" />,
+    image: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    title: "International Arbitration",
+    description: "Specialized cross-border dispute resolution following international standards and protocols.",
+    icon: <Globe className="h-8 w-8 text-primary" />,
+    image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    title: "Institutional Arbitration",
+    description: "Structured proceedings with comprehensive administrative support and transparent procedures.",
+    icon: <Award className="h-8 w-8 text-primary" />,
+    image: "https://images.unsplash.com/photo-1575505586569-646b2ca898fc?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+  },
+];
+
+const TESTIMONIALS = [
+  {
+    quote: "The arbitration process was handled with exceptional professionalism. We reached a fair resolution in half the time we expected, saving significant resources.",
+    author: "Rajiv Sharma",
+    position: "CEO, TechSphere Solutions",
+    image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80",
+  },
+  {
+    quote: "The arbitrators' industry expertise was invaluable. Their understanding of complex technical issues led to a nuanced and equitable resolution for all parties.",
+    author: "Priya Patel",
+    position: "Legal Director, Infra Developments",
+    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80",
+  },
+  {
+    quote: "The confidentiality and expedited timeline exceeded our expectations. The platform's support made the entire process seamless and transparent.",
+    author: "Vikram Mehta",
+    position: "Managing Partner, Global Ventures",
+    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80",
+  },
+];
+
+const EXPERTS = [
+  {
+    name: "Justice (Retd.) Anand Verma",
+    specialization: "Commercial & Construction Disputes",
+    experience: "35+ years of legal experience",
+    image: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80",
+  },
+  {
+    name: "Dr. Leela Krishnan",
+    specialization: "International Trade & Investment",
+    experience: "Former legal advisor to Ministry of Commerce",
+    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80",
+  },
+  {
+    name: "Adv. Rahul Kapoor",
+    specialization: "Intellectual Property & Technology",
+    experience: "25+ years in IP litigation",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80",
+  },
+];
+
+// Reusable component for section headers
+const SectionHeader = ({ title, description }: { title: string; description: string }) => (
+  <div className="flex flex-col items-center justify-center space-y-5 text-center mb-16">
+    <div className="space-y-3 max-w-3xl">
+      <h2 className="text-3xl font-bold tracking-tight md:text-4xl">{title}</h2>
+      <p className="max-w-[700px] text-muted-foreground text-lg leading-relaxed">
+        {description}
+      </p>
+    </div>
+  </div>
+);
+
 export default function Home() {
-  // Features data
-  const features = [
-    {
-      title: "Fair & Impartial",
-      description: "Our arbitrators deliver unbiased resolutions with strict adherence to principles of natural justice and equity.",
-      icon: <Scale className="h-8 w-8 text-primary" />,
-    },
-    {
-      title: "Industry Expertise",
-      description: "Access to arbitrators with deep knowledge in specialized sectors, from technology to infrastructure.",
-      icon: <BookOpen className="h-8 w-8 text-primary" />,
-    },
-    {
-      title: "Confidential Process",
-      description: "Complete privacy for all proceedings, safeguarding your sensitive business information and reputation.",
-      icon: <Shield className="h-8 w-8 text-primary" />,
-    },
-    {
-      title: "Time-Efficient",
-      description: "Structured processes that deliver resolutions in a fraction of the time compared to traditional litigation.",
-      icon: <CheckCircle className="h-8 w-8 text-primary" />,
-    },
-  ]
-
-  // Services data
-  const services = [
-    {
-      title: "Commercial Arbitration",
-      description: "Expert resolution of disputes arising from contracts, partnerships, and business relationships.",
-      icon: <Gavel className="h-8 w-8 text-primary" />,
-      image: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-    },
-    {
-      title: "International Arbitration",
-      description: "Specialized cross-border dispute resolution following international standards and protocols.",
-      icon: <Globe className="h-8 w-8 text-primary" />,
-      image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-    },
-    {
-      title: "Institutional Arbitration",
-      description: "Structured proceedings with comprehensive administrative support and transparent procedures.",
-      icon: <Award className="h-8 w-8 text-primary" />,
-      image: "https://images.unsplash.com/photo-1575505586569-646b2ca898fc?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-    },
-  ]
-
-  // Testimonials data
-  const testimonials = [
-    {
-      quote: "The arbitration process was handled with exceptional professionalism. We reached a fair resolution in half the time we expected, saving significant resources.",
-      author: "Rajiv Sharma",
-      position: "CEO, TechSphere Solutions",
-      image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80",
-    },
-    {
-      quote: "The arbitrators' industry expertise was invaluable. Their understanding of complex technical issues led to a nuanced and equitable resolution for all parties.",
-      author: "Priya Patel",
-      position: "Legal Director, Infra Developments",
-      image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80",
-    },
-    {
-      quote: "The confidentiality and expedited timeline exceeded our expectations. The platform's support made the entire process seamless and transparent.",
-      author: "Vikram Mehta",
-      position: "Managing Partner, Global Ventures",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80",
-    },
-  ]
-
-  // Experts data
-  const experts = [
-    {
-      name: "Justice (Retd.) Anand Verma",
-      specialization: "Commercial & Construction Disputes",
-      experience: "35+ years of legal experience",
-      image: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80",
-    },
-    {
-      name: "Dr. Leela Krishnan",
-      specialization: "International Trade & Investment",
-      experience: "Former legal advisor to Ministry of Commerce",
-      image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80",
-    },
-    {
-      name: "Adv. Rahul Kapoor",
-      specialization: "Intellectual Property & Technology",
-      experience: "25+ years in IP litigation",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=256&q=80",
-    },
-  ]
-
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -114,9 +123,7 @@ export default function Home() {
           <div className="flex flex-col items-center space-y-8 text-center">
             <div className="space-y-6 max-w-3xl">
               <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-white">
-                India's Premier
-                <br />
-                Arbitration Institution
+                India's Premier<br />Arbitration Institution
               </h1>
               <p className="mx-auto max-w-[800px] text-white/90 text-xl md:text-2xl leading-relaxed">
                 Resolving complex disputes with impartiality, expertise, and efficiency for businesses across India and beyond.
@@ -137,25 +144,21 @@ export default function Home() {
       {/* Features Section */}
       <section className="w-full py-24 md:py-32 bg-white">
         <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-5 text-center mb-16">
-            <div className="space-y-3 max-w-3xl">
-              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Why Choose Our Platform</h2>
-              <p className="max-w-[700px] text-muted-foreground text-lg leading-relaxed">
-                Our institution combines legal expertise, efficiency, and ethical practices to deliver optimal outcomes.
-              </p>
-            </div>
-          </div>
+          <SectionHeader 
+            title="Why Choose Our Platform" 
+            description="Our institution combines legal expertise, efficiency, and ethical practices to deliver optimal outcomes."
+          />
           <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
-            {features.map((feature, index) => (
+            {FEATURES.map((feature, index) => (
               <Card key={index} className="flex flex-col items-center text-center border-none shadow-sm hover:shadow-md transition-all duration-300 p-2">
                 <CardHeader className="pb-2">
-                  <div className="p-4 rounded-full bg-primary/5 mb-5 mx-auto">
+                  <div className="mb-4 rounded-full bg-primary/10 p-4 w-16 h-16 flex items-center justify-center mx-auto">
                     {feature.icon}
                   </div>
                   <CardTitle className="text-xl font-bold">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-base leading-relaxed">{feature.description}</CardDescription>
+                  <p className="text-muted-foreground">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -164,41 +167,36 @@ export default function Home() {
       </section>
 
       {/* Services Section */}
-      <section className="w-full py-24 md:py-32 bg-slate-50">
+      <section className="w-full py-24 md:py-32 bg-secondary/50">
         <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-5 text-center mb-16">
-            <div className="space-y-3 max-w-3xl">
-              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Our Services</h2>
-              <p className="max-w-[700px] text-muted-foreground text-lg leading-relaxed">
-                Specialized arbitration services tailored to your specific dispute resolution needs.
-              </p>
-            </div>
-          </div>
-          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 md:grid-cols-3">
-            {services.map((service, index) => (
-              <Card key={index} className="flex flex-col overflow-hidden border-none shadow-md hover:shadow-lg transition-all duration-300 hover:translate-y-[-5px] h-full">
-                <div className="relative h-56 w-full">
-                  <Image 
-                    src={service.image} 
-                    alt={service.title} 
-                    fill 
+          <SectionHeader 
+            title="Our Arbitration Services" 
+            description="Comprehensive dispute resolution solutions tailored to your specific needs."
+          />
+          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 md:grid-cols-3">
+            {SERVICES.map((service, index) => (
+              <Card key={index} className="overflow-hidden bg-white border-none shadow-md hover:shadow-lg transition-all">
+                <div className="relative h-48 w-full">
+                  <Image
+                    src={service.image}
+                    alt={service.title}
+                    fill
                     style={{ objectFit: "cover" }}
-                    className="brightness-[0.9]"
+                    className="transition-transform duration-500 hover:scale-105"
                   />
-                  <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/60 to-transparent"></div>
                 </div>
-                <CardHeader className="pb-2">
+                <CardHeader className="pt-6">
                   <div className="flex items-center gap-3">
                     {service.icon}
-                    <CardTitle className="font-bold">{service.title}</CardTitle>
+                    <CardTitle className="text-xl font-bold">{service.title}</CardTitle>
                   </div>
                 </CardHeader>
-                <CardContent className="flex-1">
-                  <CardDescription className="text-base mb-6 leading-relaxed">{service.description}</CardDescription>
+                <CardContent>
+                  <p className="text-muted-foreground">{service.description}</p>
                 </CardContent>
-                <CardFooter className="pt-0">
-                  <Button variant="ghost" size="sm" className="flex items-center gap-1 text-primary font-medium hover:bg-primary/5 -ml-3">
-                    Learn more <ArrowRight className="h-4 w-4 ml-1" />
+                <CardFooter className="border-t pt-4">
+                  <Button variant="ghost" className="gap-1 p-0 font-medium text-primary hover:text-primary/80">
+                    Learn more <ArrowRight className="h-4 w-4" />
                   </Button>
                 </CardFooter>
               </Card>
@@ -207,40 +205,36 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Testimonials Section */}
       <section className="w-full py-24 md:py-32 bg-white">
         <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-5 text-center mb-16">
-            <div className="space-y-3 max-w-3xl">
-              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Client Success Stories</h2>
-              <p className="max-w-[700px] text-muted-foreground text-lg leading-relaxed">
-                Hear from businesses that have successfully resolved disputes through our platform.
-              </p>
-            </div>
-          </div>
-          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 md:grid-cols-3">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="flex flex-col border-none shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-3px] h-full">
-                <CardHeader className="pb-2 relative">
-                  <div className="absolute top-0 right-0 w-14 h-14 flex items-center justify-center text-slate-200 opacity-25">
-                    <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M7.39999 6.32003L15.89 3.49003C19.7 2.22003 21.77 4.30003 20.51 8.11003L17.68 16.6C15.78 22.31 12.66 22.31 10.76 16.6L9.91999 14.08L7.39999 13.24C1.68999 11.34 1.68999 8.23003 7.39999 6.32003Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
+          <SectionHeader 
+            title="What Our Clients Say" 
+            description="Discover how our arbitration services have helped businesses resolve complex disputes efficiently."
+          />
+          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
+            {TESTIMONIALS.map((testimonial, index) => (
+              <Card key={index} className="border-none shadow-md hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6">
+                  <div className="mb-4 flex items-center gap-2">
+                    {[...Array(5)].map((_, i) => (
+                      <svg key={i} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5 text-yellow-500">
+                        <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
+                      </svg>
+                    ))}
                   </div>
-                </CardHeader>
-                <CardContent className="flex-1 pt-4">
-                  <p className="mb-8 text-lg leading-relaxed italic text-slate-700">"{testimonial.quote}"</p>
+                  <p className="mb-6 text-muted-foreground italic">"{testimonial.quote}"</p>
                   <div className="flex items-center gap-4">
-                    <div className="relative h-14 w-14 rounded-full overflow-hidden border-2 border-slate-100">
-                      <Image 
-                        src={testimonial.image} 
-                        alt={testimonial.author} 
-                        fill 
+                    <div className="relative h-12 w-12 overflow-hidden rounded-full">
+                      <Image
+                        src={testimonial.image}
+                        alt={testimonial.author}
+                        fill
                         style={{ objectFit: "cover" }}
                       />
                     </div>
                     <div>
-                      <p className="font-semibold text-slate-900">{testimonial.author}</p>
+                      <p className="font-semibold">{testimonial.author}</p>
                       <p className="text-sm text-muted-foreground">{testimonial.position}</p>
                     </div>
                   </div>
@@ -252,35 +246,28 @@ export default function Home() {
       </section>
 
       {/* Experts Section */}
-      <section className="w-full py-24 md:py-32 bg-slate-50">
+      <section className="w-full py-24 md:py-32 bg-secondary/50">
         <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-5 text-center mb-16">
-            <div className="space-y-3 max-w-3xl">
-              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Meet Our Expert Arbitrators</h2>
-              <p className="max-w-[700px] text-muted-foreground text-lg leading-relaxed">
-                Distinguished professionals with decades of experience in complex dispute resolution.
-              </p>
-            </div>
-          </div>
-          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 md:grid-cols-3">
-            {experts.map((expert, index) => (
-              <Card key={index} className="flex flex-col border-none shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-3px] overflow-hidden h-full">
-                <div className="bg-primary/5 pt-10 pb-5 px-4">
-                  <div className="relative mx-auto h-40 w-40 rounded-full overflow-hidden border-4 border-white shadow-md">
-                    <Image 
-                      src={expert.image} 
-                      alt={expert.name} 
-                      fill 
-                      style={{ objectFit: "cover" }}
-                    />
-                  </div>
+          <SectionHeader 
+            title="Our Arbitration Experts" 
+            description="Experienced professionals dedicated to delivering fair and efficient dispute resolution."
+          />
+          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
+            {EXPERTS.map((expert, index) => (
+              <Card key={index} className="overflow-hidden border-none shadow-md hover:shadow-lg transition-all">
+                <div className="relative h-64 w-full">
+                  <Image
+                    src={expert.image}
+                    alt={expert.name}
+                    fill
+                    style={{ objectFit: "cover" }}
+                    className="transition-transform duration-500 hover:scale-105"
+                  />
                 </div>
-                <CardHeader>
-                  <CardTitle className="text-center text-xl">{expert.name}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-1 text-center">
-                  <p className="font-medium mb-3 text-primary">{expert.specialization}</p>
-                  <p className="text-muted-foreground">{expert.experience}</p>
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-bold">{expert.name}</h3>
+                  <p className="text-primary font-medium">{expert.specialization}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{expert.experience}</p>
                 </CardContent>
               </Card>
             ))}
@@ -289,32 +276,21 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="w-full py-24 md:py-32 relative overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
-            alt="CTA background"
-            fill
-            style={{ objectFit: "cover", objectPosition: "center" }}
-            className="brightness-[0.85]"
-          />
-          <div className="absolute inset-0 bg-primary/80 mix-blend-multiply"></div>
-        </div>
-        
-        <div className="container px-4 md:px-6 relative z-10">
-          <div className="flex flex-col items-center justify-center space-y-8 text-center max-w-3xl mx-auto">
-            <div className="space-y-4">
-              <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-white">Ready to Resolve Your Dispute?</h2>
-              <p className="max-w-[700px] text-white/90 text-lg leading-relaxed">
-                Our team of expert arbitrators is ready to help you find an efficient and fair resolution to your complex business disputes.
+      <section className="w-full py-24 md:py-32 bg-primary text-white">
+        <div className="container px-4 md:px-6">
+          <div className="mx-auto flex max-w-6xl flex-col items-center text-center">
+            <div className="space-y-4 max-w-3xl">
+              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Ready to Resolve Your Dispute?</h2>
+              <p className="text-xl text-white/90">
+                Our team of expert arbitrators is ready to help you reach a fair and efficient resolution.
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-5 pt-4">
-              <Button size="lg" className="bg-white text-primary hover:bg-white/90 text-base font-medium px-8 py-6 rounded-md hover:translate-y-[-2px] transition-all">
-                Start Arbitration Process
+            <div className="mt-12 flex flex-col sm:flex-row gap-5">
+              <Button size="lg" className="text-base font-medium px-8 py-6 rounded-md bg-white text-primary hover:bg-white/90 hover:translate-y-[-2px] transition-all">
+                Start Arbitration
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 text-base font-medium px-8 py-6 rounded-md hover:translate-y-[-2px] transition-all">
-                Schedule a Consultation
+              <Button size="lg" variant="outline" className="text-base font-medium px-8 py-6 rounded-md border-white text-white hover:bg-white/10 hover:translate-y-[-2px] transition-all">
+                Contact Us
               </Button>
             </div>
           </div>
@@ -322,77 +298,55 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="w-full py-16 bg-slate-900 text-white">
+      <footer className="w-full bg-neutral-900 text-white py-16">
         <div className="container px-4 md:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold">Indian Arbitration Platform</h3>
-              <p className="text-slate-300 leading-relaxed">
-                India's premier institution for fair, efficient, and expert arbitration services.
+          <div className="mx-auto grid max-w-6xl gap-12 md:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <h3 className="text-xl font-bold mb-4">Indian Arbitration Platform</h3>
+              <p className="text-sm text-white/70 mb-6">
+                Leading dispute resolution services for businesses across India and beyond.
               </p>
-            </div>
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Services</h3>
-              <ul className="space-y-3">
-                <li className="text-slate-300 hover:text-white transition-colors flex items-center gap-1 cursor-pointer">
-                  <ArrowRight className="h-3.5 w-3.5" />
-                  <span>Commercial Arbitration</span>
-                </li>
-                <li className="text-slate-300 hover:text-white transition-colors flex items-center gap-1 cursor-pointer">
-                  <ArrowRight className="h-3.5 w-3.5" />
-                  <span>International Arbitration</span>
-                </li>
-                <li className="text-slate-300 hover:text-white transition-colors flex items-center gap-1 cursor-pointer">
-                  <ArrowRight className="h-3.5 w-3.5" />
-                  <span>Institutional Arbitration</span>
-                </li>
-              </ul>
-            </div>
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Resources</h3>
-              <ul className="space-y-3">
-                <li className="text-slate-300 hover:text-white transition-colors flex items-center gap-1 cursor-pointer">
-                  <ArrowRight className="h-3.5 w-3.5" />
-                  <span>Arbitration Rules</span>
-                </li>
-                <li className="text-slate-300 hover:text-white transition-colors flex items-center gap-1 cursor-pointer">
-                  <ArrowRight className="h-3.5 w-3.5" />
-                  <span>Guidelines</span>
-                </li>
-                <li className="text-slate-300 hover:text-white transition-colors flex items-center gap-1 cursor-pointer">
-                  <ArrowRight className="h-3.5 w-3.5" />
-                  <span>Case Studies</span>
-                </li>
-              </ul>
-            </div>
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Contact</h3>
-              <div className="space-y-3">
-                <p className="text-slate-300 flex items-center gap-2">
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 13.43C13.7231 13.43 15.12 12.0331 15.12 10.31C15.12 8.58687 13.7231 7.19 12 7.19C10.2769 7.19 8.88 8.58687 8.88 10.31C8.88 12.0331 10.2769 13.43 12 13.43Z" stroke="currentColor" strokeWidth="1.5"/>
-                    <path d="M3.62001 8.49C5.59001 -0.169998 18.42 -0.159997 20.38 8.5C21.53 13.58 18.37 17.88 15.6 20.54C13.59 22.48 10.41 22.48 8.39001 20.54C5.63001 17.88 2.47001 13.57 3.62001 8.49Z" stroke="currentColor" strokeWidth="1.5"/>
-                  </svg>
-                  <span>New Delhi, India</span>
-                </p>
-                <p className="text-slate-300 flex items-center gap-2">
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17 20.5H7C4 20.5 2 19 2 15.5V8.5C2 5 4 3.5 7 3.5H17C20 3.5 22 5 22 8.5V15.5C22 19 20 20.5 17 20.5Z" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M17 9L13.87 11.5C12.84 12.32 11.15 12.32 10.12 11.5L7 9" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <span>contact@indianarbitration.org</span>
-                </p>
-                <p className="text-slate-300 flex items-center gap-2">
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M21.97 18.33C21.97 18.69 21.89 19.06 21.72 19.42C21.55 19.78 21.33 20.12 21.04 20.44C20.55 20.98 20.01 21.37 19.4 21.62C18.8 21.87 18.15 22 17.45 22C16.43 22 15.34 21.76 14.19 21.27C13.04 20.78 11.89 20.12 10.75 19.29C9.6 18.45 8.51 17.52 7.47 16.49C6.44 15.45 5.51 14.36 4.68 13.22C3.86 12.08 3.2 10.94 2.72 9.81C2.24 8.67 2 7.58 2 6.54C2 5.86 2.12 5.21 2.36 4.61C2.6 4 2.98 3.44 3.51 2.94C4.15 2.31 4.85 2 5.59 2C5.87 2 6.15 2.06 6.4 2.18C6.66 2.3 6.89 2.48 7.07 2.74L9.39 6.01C9.57 6.26 9.7 6.49 9.79 6.71C9.88 6.92 9.93 7.13 9.93 7.32C9.93 7.56 9.86 7.8 9.72 8.03C9.59 8.26 9.4 8.5 9.16 8.74L8.4 9.53C8.29 9.64 8.24 9.77 8.24 9.93C8.24 10.01 8.25 10.08 8.27 10.16C8.3 10.24 8.33 10.3 8.35 10.36C8.53 10.69 8.84 11.12 9.28 11.64C9.73 12.16 10.21 12.69 10.73 13.22C11.27 13.75 11.79 14.24 12.32 14.69C12.84 15.13 13.27 15.43 13.61 15.61C13.66 15.63 13.72 15.66 13.79 15.69C13.87 15.72 13.95 15.73 14.04 15.73C14.21 15.73 14.34 15.67 14.45 15.56L15.21 14.81C15.46 14.56 15.7 14.37 15.93 14.25C16.16 14.11 16.39 14.04 16.64 14.04C16.83 14.04 17.03 14.08 17.25 14.17C17.47 14.26 17.7 14.39 17.95 14.56L21.26 16.91C21.52 17.09 21.7 17.31 21.81 17.55C21.91 17.8 21.97 18.05 21.97 18.33Z" stroke="currentColor" strokeWidth="1.5" strokeMiterlimit="10"/>
-                  </svg>
-                  <span>+91 11 2345 6789</span>
-                </p>
+              <div className="flex gap-4">
+                {['facebook', 'twitter', 'linkedin', 'instagram'].map(social => (
+                  <a key={social} href="#" className="transition-colors text-white/70 hover:text-white">
+                    <span className="sr-only">{social}</span>
+                    <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+                      <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.477 2 2 6.477 2 12c0 5.523 4.477 10 10 10s10-4.477 10-10c0-5.523-4.477-10-10-10z" />
+                      </svg>
+                    </div>
+                  </a>
+                ))}
               </div>
             </div>
+            <div>
+              <h3 className="text-lg font-bold mb-4">Services</h3>
+              <ul className="space-y-3 text-sm">
+                {['Commercial Arbitration', 'International Arbitration', 'Institutional Arbitration', 'Ad Hoc Arbitration', 'Mediation Services'].map(service => (
+                  <li key={service}><a href="#" className="text-white/70 hover:text-white transition-colors">{service}</a></li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold mb-4">Quick Links</h3>
+              <ul className="space-y-3 text-sm">
+                {['About Us', 'Our Experts', 'Case Studies', 'Resources', 'Blog', 'FAQs'].map(link => (
+                  <li key={link}><a href="#" className="text-white/70 hover:text-white transition-colors">{link}</a></li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold mb-4">Contact</h3>
+              <ul className="space-y-3 text-sm">
+                <li className="text-white/70">112 Arbitration Tower, Law Street</li>
+                <li className="text-white/70">New Delhi, 110001</li>
+                <li><a href="tel:+911234567890" className="text-white/70 hover:text-white transition-colors">+91 123 456 7890</a></li>
+                <li><a href="mailto:info@indianarbitration.com" className="text-white/70 hover:text-white transition-colors">info@indianarbitration.com</a></li>
+              </ul>
+            </div>
           </div>
-          <div className="mt-16 border-t border-slate-800 pt-10 text-center text-slate-400">
-            <p>© 2023 Indian Arbitration Platform. All rights reserved.</p>
+          <div className="mt-16 pt-8 border-t border-white/10 text-center text-sm text-white/50">
+            <p>© {new Date().getFullYear()} Indian Arbitration Platform. All rights reserved.</p>
           </div>
         </div>
       </footer>
