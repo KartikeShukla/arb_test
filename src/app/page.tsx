@@ -185,14 +185,14 @@ export default function Home() {
           />
           <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 md:grid-cols-3">
             {SERVICES.map((service, index) => (
-              <Card key={index} className="overflow-hidden bg-white border-none shadow-md hover:shadow-lg transition-all">
+              <Card key={index} className="overflow-hidden bg-white border-none shadow-md hover:shadow-lg hover:scale-[1.02] transition-all">
                 <div className="relative h-48 w-full">
                   <Image
                     src={service.image}
                     alt={service.title}
                     fill
                     style={{ objectFit: "cover" }}
-                    className="transition-transform duration-500 hover:scale-105"
+                    className="transition-transform duration-500"
                   />
                 </div>
                 <CardHeader className="pt-6">
@@ -264,14 +264,14 @@ export default function Home() {
           />
           <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
             {EXPERTS.map((expert, index) => (
-              <Card key={index} className="overflow-hidden border-none shadow-md hover:shadow-lg transition-all">
+              <Card key={index} className="overflow-hidden border-none shadow-md hover:shadow-lg hover:scale-[1.02] transition-all">
                 <div className="relative h-64 w-full">
                   <Image
                     src={expert.image}
                     alt={expert.name}
                     fill
                     style={{ objectFit: "cover" }}
-                    className="transition-transform duration-500 hover:scale-105"
+                    className="transition-transform duration-500"
                   />
                 </div>
                 <CardContent className="p-6">
