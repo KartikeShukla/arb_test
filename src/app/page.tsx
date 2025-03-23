@@ -1,11 +1,14 @@
 "use client"
 
-import { Award, Scale, BookOpen, CheckCircle, Gavel, Globe, MessageSquare, Shield, Users, ArrowRight, ExternalLink, Mail } from "lucide-react"
+import { Award, Scale, BookOpen, CheckCircle, Gavel, Globe, MessageSquare, Shield, Users, ArrowRight, ExternalLink, Mail, LogOut } from "lucide-react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { CaseFormModal } from "@/components/case-form/case-form-modal"
+import { AuthModal } from "@/components/auth/auth-modal"
+import { useAuth } from "@/components/auth/auth-provider"
+import Link from "next/link"
 
 // Data constants
 const FEATURES = [
@@ -107,10 +110,15 @@ const SectionHeader = ({ title, description }: { title: string; description: str
 );
 
 export default function Home() {
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isCaseModalOpen, setIsCaseModalOpen] = useState(false)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const { user, signOut, isLoading } = useAuth()
 
-  const openModal = () => setIsModalOpen(true)
-  const closeModal = () => setIsModalOpen(false)
+  const openCaseModal = () => setIsCaseModalOpen(true)
+  const closeCaseModal = () => setIsCaseModalOpen(false)
+  
+  const openAuthModal = () => setIsAuthModalOpen(true)
+  const closeAuthModal = () => setIsAuthModalOpen(false)
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -137,14 +145,45 @@ export default function Home() {
               <p className="mx-auto max-w-[800px] text-white/90 text-xl md:text-2xl leading-relaxed">
                 Resolving complex disputes with impartiality, expertise, and efficiency for businesses across India and beyond.
               </p>
-              <div className="mt-12 flex flex-col sm:flex-row gap-5 justify-center">
+              <div className="mt-12 flex flex-row gap-5 justify-center">
                 <Button 
                   size="lg" 
                   className="text-base font-medium px-8 py-6 rounded-md bg-blue-600 text-white hover:bg-blue-700 hover:translate-y-[-2px] transition-all"
-                  onClick={openModal}
+                  onClick={openCaseModal}
                 >
-                  Get Started with Your Case <Mail className="ml-2 h-5 w-5" />
+                  Submit Your Case <Mail className="ml-2 h-5 w-5" />
                 </Button>
+                
+                {isLoading ? (
+                  <div className="h-[60px] w-48 bg-white/20 animate-pulse rounded-md"></div>
+                ) : user ? (
+                  <div className="flex gap-3">
+                    <Link href="/dashboard">
+                      <Button 
+                        size="lg" 
+                        className="text-base font-medium px-8 py-6 rounded-md bg-white text-primary hover:bg-white/90 hover:translate-y-[-2px] transition-all"
+                      >
+                        Go to Dashboard
+                      </Button>
+                    </Link>
+                    <Button 
+                      size="lg" 
+                      className="text-base font-medium px-8 py-6 rounded-md bg-red-600 text-white hover:bg-red-700 hover:translate-y-[-2px] transition-all"
+                      onClick={signOut}
+                      aria-label="Log out"
+                    >
+                      <LogOut className="h-5 w-5" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button 
+                    size="lg" 
+                    className="text-base font-medium px-8 py-6 rounded-md bg-white text-primary hover:bg-white/90 hover:translate-y-[-2px] transition-all"
+                    onClick={openAuthModal}
+                  >
+                    Sign In / Sign Up
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -295,14 +334,35 @@ export default function Home() {
                 Our team of expert arbitrators is ready to help you reach a fair and efficient resolution.
               </p>
             </div>
-            <div className="mt-12 flex flex-col sm:flex-row gap-5 justify-center">
+            <div className="mt-12 flex flex-row gap-5 justify-center">
               <Button 
                 size="lg" 
                 className="text-base font-medium px-8 py-6 rounded-md bg-blue-600 text-white hover:bg-blue-700 hover:translate-y-[-2px] transition-all"
-                onClick={openModal}
+                onClick={openCaseModal}
               >
-                Get Started with Your Case <Mail className="ml-2 h-5 w-5" />
+                Submit Your Case <Mail className="ml-2 h-5 w-5" />
               </Button>
+              
+              {isLoading ? (
+                <div className="h-[60px] w-48 bg-white/20 animate-pulse rounded-md"></div>
+              ) : user ? (
+                <Link href="/dashboard">
+                  <Button 
+                    size="lg" 
+                    className="text-base font-medium px-8 py-6 rounded-md bg-white text-primary hover:bg-white/90 hover:translate-y-[-2px] transition-all"
+                  >
+                    Go to Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <Button 
+                  size="lg" 
+                  className="text-base font-medium px-8 py-6 rounded-md bg-white text-primary hover:bg-white/90 hover:translate-y-[-2px] transition-all"
+                  onClick={openAuthModal}
+                >
+                  Sign In / Sign Up
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -363,7 +423,10 @@ export default function Home() {
       </footer>
 
       {/* Case Form Modal */}
-      <CaseFormModal isOpen={isModalOpen} onClose={closeModal} />
+      <CaseFormModal isOpen={isCaseModalOpen} onClose={closeCaseModal} />
+      
+      {/* Auth Modal */}
+      <AuthModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />
     </div>
   )
 } 

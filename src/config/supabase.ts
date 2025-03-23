@@ -8,6 +8,7 @@ const getSupabaseUrl = (): string => {
     console.warn('NEXT_PUBLIC_SUPABASE_URL is not defined');
     return '';
   }
+  console.log('Supabase URL:', url); // Debugging log
   return url;
 };
 
@@ -17,6 +18,7 @@ const getSupabaseAnonKey = (): string => {
     console.warn('NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined');
     return '';
   }
+  console.log('Supabase Anon Key length:', key.length); // Debugging log (don't log full key)
   return key;
 };
 
@@ -32,11 +34,14 @@ export const createSupabaseClient = () => {
   const supabaseAnonKey = getSupabaseAnonKey();
   
   if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('Failed to create Supabase client: Missing URL or Anon Key');
     return null;
   }
   
   try {
-    return createClient(getSafeUrl(supabaseUrl), supabaseAnonKey);
+    const client = createClient(getSafeUrl(supabaseUrl), supabaseAnonKey);
+    console.log('Supabase client created successfully');
+    return client;
   } catch (error) {
     console.error('Failed to create Supabase client:', error);
     return null;
@@ -45,6 +50,7 @@ export const createSupabaseClient = () => {
 
 // Determine if we're in development mode
 export const isDevelopment = process.env.NODE_ENV === 'development';
+console.log('Environment:', isDevelopment ? 'Development' : 'Production');
 
 // Create mock operations for development
 export const mockSupabaseOps = {
@@ -70,4 +76,5 @@ export const mockSupabaseOps = {
 };
 
 // Create a singleton instance
-export const supabase = createSupabaseClient(); 
+export const supabase = createSupabaseClient();
+console.log('Supabase initialization complete, client available:', !!supabase); 
