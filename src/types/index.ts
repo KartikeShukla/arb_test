@@ -92,7 +92,7 @@ export interface UserData {
   email: string;
   full_name?: string;
   role: UserRole;
-  is_approved: boolean;
+  // is_approved: boolean; // Removed as it doesn't exist in the schema
   created_at: string;
 }
 
@@ -102,7 +102,7 @@ export interface UserData {
 export interface UserRoleData {
   user_id: string;
   role: UserRole;
-  is_approved: boolean;
+  // is_approved: boolean; // Removed as it doesn't exist in the schema
   created_at?: string;
   updated_at?: string;
 }
@@ -171,4 +171,4 @@ export type FormSubmitHandler = (e: React.FormEvent) => Promise<void>;
 /**
  * Function type for handling permission checks
  */
-export type PermissionChecker = (permission: Permission) => boolean; 
+export type PermissionChecker = (permission: Permission) => boolean;

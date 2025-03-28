@@ -3,16 +3,18 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react"
 import { Session, User } from "@supabase/supabase-js"
 import { supabase } from "@/config/supabase"
+import { toast } from "@/components/ui/use-toast"
 
-type UserRole = "admin" | "user"
+// Define permissions type
+type Permission = 'read:cases' | 'write:cases' | 'manage:users' | 'view:admin-dashboard';
 
-// Define granular permissions
-export type Permission = 'read:cases' | 'write:cases' | 'manage:users' | 'view:admin-dashboard';
+type UserRole = "admin" | "user" | "arbitrator"
 
 // Map roles to permissions
 const rolePermissions: Record<UserRole, Permission[]> = {
   'admin': ['read:cases', 'write:cases', 'manage:users', 'view:admin-dashboard'],
-  'user': ['read:cases', 'write:cases']
+  'user': ['read:cases', 'write:cases'],
+  'arbitrator': ['read:cases', 'write:cases']
 };
 
 type AuthContextType = {
@@ -25,7 +27,15 @@ type AuthContextType = {
   signOut: () => Promise<void>
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider")
+  }
+  return context
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -38,6 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!supabase) return null
     
     try {
+      console.log(`Fetching role for user ${userId}`);
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
@@ -49,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return null
       }
       
+      console.log(`Fetched role for user ${userId}:`, data.role);
       return data.role as UserRole
     } catch (err) {
       console.error("Exception fetching user role:", err)
@@ -70,6 +82,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     setIsLoading(false)
   }, [fetchUserRole])
+  
+  // Set up realtime subscription for role changes
+  useEffect(() => {
+    if (!supabase || !user) return
+    
+    console.log('Setting up realtime subscription for role changes');
+
+    // Subscribe to role changes for the current user
+    const channel = supabase
+      .channel('public:role_changes')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'role_changes',
+        filter: `user_id=eq.${user.id}`,
+      }, async (payload) => {
+        console.log('Received role change notification:', payload);
+        
+        // Extract the new role from the payload
+        const { new_role } = payload.new as { new_role: UserRole };
+        
+        if (new_role) {
+          console.log(`User role changed to: ${new_role}`);
+          
+          // Update the user role in state
+          setUserRole(new_role);
+          
+          // Notify the user about their role change
+          toast({
+            title: "Your access level has changed",
+            description: `Your role has been updated to ${new_role}. The page will refresh to apply changes.`,
+          });
+          
+          // Refresh the page after a short delay to ensure user sees the toast
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000);
+        }
+      })
+      .subscribe((status) => {
+        console.log('Role changes subscription status:', status);
+      });
+
+    // Cleanup function
+    return () => {
+      console.log('Unsubscribing from role changes');
+      if (supabase) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [user, toast]);
   
   useEffect(() => {
     if (!supabase) {
@@ -143,14 +206,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {children}
     </AuthContext.Provider>
   )
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext)
-  
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
-  }
-  
-  return context
 } 
