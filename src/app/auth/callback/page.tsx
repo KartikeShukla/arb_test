@@ -14,6 +14,11 @@ export default function AuthCallbackPage() {
     }
     
     const handleAuthCallback = async () => {
+      if (!supabase) {
+        console.error("Supabase client is not available");
+        return;
+      }
+      
       const { data, error } = await supabase.auth.getSession()
       
       if (error) {
